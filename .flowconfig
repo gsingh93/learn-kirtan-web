@@ -1,2 +1,7 @@
 [ignore]
-.*/node_modules/
+.*/node_modules/react.*
+.*/node_modules/grunt.*
+.*/node_modules/flow.*
+.*/node_modules/babel.*
+.*/node_modules/browserify.*
+

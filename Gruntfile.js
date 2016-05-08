@@ -5,26 +5,47 @@ module.exports = function(grunt) {
         NODE_ENV: 'production'
       }
     },
-    flow: {
+    sass: {
+      options: {
+        sourceMapEmbed: true
+      },
       dist: {
-        src: '.'
+        files: {
+          'dist/main.css': 'src/scss/main.scss'
+        }
       }
     },
-    babel: {
+    eslint: {
       options: {
-        presets: [
-          "es2015",
-          "react"
+        force: true
+      },
+      dist: {
+        src: ['src/**/*.js']
+      }
+    },
+    run: {
+      flow: {
+        cmd: 'flow'
+      }
+    },
+    browserify: {
+      options: {
+        browserifyOptions: {
+          debug: true
+        },
+        transform: [
+          [
+            'babelify', {
+              presets: [
+                'es2015',
+                'react'
+              ]
+            }
+          ]
         ]
       },
       dist: {
         src: 'src/app.js',
-        dest: 'build/app-babel.js'
-      }
-    },
-    browserify: {
-      dist: {
-        src: 'build/app-babel.js',
         dest: 'build/app-browserify.js'
       }
     },
@@ -34,22 +55,37 @@ module.exports = function(grunt) {
         dest: 'dist/app.js'
       }
     },
+    watch: {
+      files: ['src/**/*.js'],
+      tasks: ['default']
+    },
     copy: {
       dist: {
         files: {
           'dist/index.html': 'src/index.html'
         }
+      },
+      browserify: {
+        files: {
+          'dist/app.js': 'build/app-browserify.js',
+          'dist/a.wav': 'src/a.wav'
+        }
       }
     }
   });
 
-  grunt.loadNpmTasks('grunt-babel');
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-contrib-copy');
+  grunt.loadNpmTasks('grunt-sass');
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-env');
-  grunt.loadNpmTasks('grunt-flow-type-check');
+  grunt.loadNpmTasks('grunt-eslint');
+  grunt.loadNpmTasks('grunt-force-task');
+  grunt.loadNpmTasks('grunt-run');
 
-  grunt.registerTask('default', ['flow', 'browserify', 'babel', 'uglify', 'copy']);
-  grunt.registerTask('release', ['env:release', 'flow', 'browserify', 'babel', 'uglify', 'copy']);
+  grunt.registerTask('check', ['force:eslint', 'run:flow']);
+  grunt.registerTask('build', ['browserify', 'copy', 'sass']);
+  grunt.registerTask('default', ['check', 'build']);
+  grunt.registerTask('release', ['env:release', 'eslint', 'run:flow', 'browserify', 'uglify', 'copy:dist', 'sass']);
 };
